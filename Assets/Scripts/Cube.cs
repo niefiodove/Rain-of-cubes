@@ -4,19 +4,17 @@ using UnityEngine;
 
 public class Cube : MonoBehaviour
 {
-    private Repainter _repainter;
+    [SerializeField] private Repainter _repainter;
     private bool _isFirstCollision = true;
+    private WaitForSeconds _waitForSeconds = new WaitForSeconds(2f);
 
     public event Action<GameObject> WaitOver;
 
-    private void Awake()
-    {
-        _repainter = FindFirstObjectByType<Repainter>();
-    }
-
     private void Start()
     {
-        if (gameObject.TryGetComponent<Renderer>(out Renderer renderer))
+        Renderer renderer = GetComponent<Renderer>();
+
+        if (renderer != null)
             _repainter.RepaintToStartColor(renderer);
     }
 
@@ -25,8 +23,9 @@ public class Cube : MonoBehaviour
         if (other.gameObject.layer <= gameObject.layer && _isFirstCollision)
         {
             _isFirstCollision = false;
+            Collider collider = GetComponent<Collider>();
 
-            if (TryGetComponent<Collider>(out Collider collider))
+            if (collider != null)
             {
                 _repainter.Repaint(collider);
                 StartCoroutine(ReturnWithDelay(collider));
@@ -34,10 +33,12 @@ public class Cube : MonoBehaviour
         }
     }
 
-    IEnumerator ReturnWithDelay(Collider collider)
+    private IEnumerator ReturnWithDelay(Collider collider)
     {
-        yield return new WaitForSeconds(2f);
-        if (collider.gameObject.TryGetComponent<Renderer>(out Renderer renderer))
+        yield return _waitForSeconds;
+        Renderer renderer = GetComponent<Renderer>();
+
+        if (renderer != null)
             _repainter.RepaintToStartColor(renderer);
 
         collider.gameObject.SetActive(false);
