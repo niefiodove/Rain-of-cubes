@@ -2,34 +2,33 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(Renderer), typeof(Collider), typeof(Rigidbody))]
+
 public class Cube : MonoBehaviour
 {
     [SerializeField] private Repainter _repainter;
     private bool _isFirstCollision = true;
     private WaitForSeconds _waitForSeconds = new WaitForSeconds(2f);
 
-    public event Action<GameObject> WaitOver;
+    public event Action<Cube> WaitOver;
 
     private void Start()
     {
         Renderer renderer = GetComponent<Renderer>();
 
-        if (renderer != null)
-            _repainter.RepaintToStartColor(renderer);
+        _repainter.RepaintToStartColor(renderer);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.layer <= gameObject.layer && _isFirstCollision)
+        if (other.gameObject.layer < gameObject.layer && _isFirstCollision)
         {
             _isFirstCollision = false;
             Collider collider = GetComponent<Collider>();
+            Renderer renderer = GetComponent<Renderer>();
 
-            if (collider != null)
-            {
-                _repainter.Repaint(collider);
-                StartCoroutine(ReturnWithDelay(collider));
-            }
+            _repainter.Repaint(renderer);
+            StartCoroutine(ReturnWithDelay(collider));
         }
     }
 
@@ -37,11 +36,13 @@ public class Cube : MonoBehaviour
     {
         yield return _waitForSeconds;
         Renderer renderer = GetComponent<Renderer>();
+        Rigidbody body = GetComponent<Rigidbody>();
 
         if (renderer != null)
             _repainter.RepaintToStartColor(renderer);
 
         collider.gameObject.SetActive(false);
-        WaitOver?.Invoke(gameObject);
+        body.linearVelocity = Vector3.zero;
+        WaitOver?.Invoke(gameObject.GetComponent<Cube>());
     }
 }

@@ -9,9 +9,8 @@ public class Repainter : MonoBehaviour
         renderer.material.color = _startColor;
     }
 
-    public void Repaint(Collider collider)
+    public void Repaint(Renderer renderer)
     {
-        if(collider.TryGetComponent<Renderer>(out Renderer renderer))
-            renderer.material.color = Color.black;
+        renderer.material.color = Color.black;
     }
 }

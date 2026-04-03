@@ -4,43 +4,40 @@ using UnityEngine.Pool;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] private GameObject _prefab;
+    [SerializeField] private Cube _prefab;
     [SerializeField] private Collider _startPoint;
     [SerializeField] private Repainter _repainter;
     [SerializeField] private float _reapetRate = 0.3f;
     [SerializeField] private int _poolCapacity = 5;
     [SerializeField] private int _poolMaxSize = 5;
 
-    private ObjectPool<GameObject> _pool;
+    private ObjectPool<Cube> _pool;
 
     private void OnEnable()
     {
-        if (_prefab.TryGetComponent<Cube>(out Cube cube))
-            cube.WaitOver += ReturnToPool;
+            _prefab.WaitOver += ReturnToPool;
     }
 
     private void OnDisable()
     {
-        if (_prefab.TryGetComponent<Cube>(out Cube cube))
-            cube.WaitOver -= ReturnToPool;
+            _prefab.WaitOver -= ReturnToPool;
     }
     private void Awake()
     {
-        _pool = new ObjectPool<GameObject>(
+        _pool = new ObjectPool<Cube>(
             createFunc: () => Instantiate(_prefab),
-            actionOnGet: (obj) => ActionOnGet(obj),
-            actionOnRelease: (obj) => obj.SetActive(false),
+            actionOnGet: (obj) => InitializeCube(obj),
+            actionOnRelease: (obj) => obj.gameObject.SetActive(false),
             actionOnDestroy: (obj) => Destroy(obj),
             collectionCheck: true,
             defaultCapacity: _poolCapacity,
             maxSize: _poolMaxSize);
     }
 
-    private void ActionOnGet(GameObject obj)
+    private void InitializeCube(Cube obj)
     {
         obj.transform.position = GetRandomPosition(_startPoint);
-        obj.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
-        obj.SetActive(true);
+        obj.gameObject.SetActive(true);
     }
 
     private void Start()
@@ -50,10 +47,12 @@ public class Spawner : MonoBehaviour
 
     private IEnumerator SpawnCoroutine()
     {
-        while (true)
+        WaitForSeconds waitForSeconds = new WaitForSeconds(_reapetRate);
+
+        while (enabled)
         {
             GetCube();
-            yield return new WaitForSeconds(_reapetRate);
+            yield return waitForSeconds;
         }
     }
 
@@ -71,8 +70,8 @@ public class Spawner : MonoBehaviour
         return new Vector3(UnityEngine.Random.Range(min.x, max.x), min.y, UnityEngine.Random.Range(min.z, max.z));
     }
 
-    private void ReturnToPool(GameObject gameObject)
+    private void ReturnToPool(Cube cube)
     {
-        _pool.Release(gameObject);
+        _pool.Release(cube);
     }
 }
