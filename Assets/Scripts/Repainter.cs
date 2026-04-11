@@ -3,14 +3,20 @@ using UnityEngine;
 public class Repainter : MonoBehaviour
 {
     [SerializeField] private Color _startColor;
+    private Renderer _renderer;
 
-    public void RepaintToStartColor(Renderer renderer)
+    private void Awake()
     {
-        renderer.material.color = _startColor;
+        _renderer = GetComponent<Renderer>();
     }
 
-    public void Repaint(Renderer renderer)
+    public void RepaintToStartColor()
     {
-        renderer.material.color = Color.black;
+        _renderer.material.color = _startColor;
+    }
+
+    public void Repaint()
+    {
+        _renderer.material.color = Color.black;
     }
 }

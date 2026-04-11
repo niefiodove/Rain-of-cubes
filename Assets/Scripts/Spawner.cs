@@ -28,7 +28,7 @@ public class Spawner : MonoBehaviour
             createFunc: () => Instantiate(_prefab),
             actionOnGet: (obj) => InitializeCube(obj),
             actionOnRelease: (obj) => obj.gameObject.SetActive(false),
-            actionOnDestroy: (obj) => Destroy(obj),
+            actionOnDestroy: (obj) => Destroy(obj.gameObject),
             collectionCheck: true,
             defaultCapacity: _poolCapacity,
             maxSize: _poolMaxSize);
@@ -55,7 +55,6 @@ public class Spawner : MonoBehaviour
             yield return waitForSeconds;
         }
     }
-
 
     private void GetCube()
     {
