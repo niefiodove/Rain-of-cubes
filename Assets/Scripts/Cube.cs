@@ -9,7 +9,6 @@ public class Cube : MonoBehaviour
     private bool _isFirstCollision = true;
     private Repainter _repainter;
     private WaitForSeconds _waitForSeconds = new WaitForSeconds(2f);
-    private Collider _collider;
     private Rigidbody _rigidbody;
 
     public event Action<Cube> WaitOver;
@@ -17,7 +16,6 @@ public class Cube : MonoBehaviour
     private void Awake()
     {
         _repainter = GetComponent<Repainter>();
-        _collider = GetComponent<Collider>();
         _rigidbody = GetComponent<Rigidbody>();
     }
 
@@ -26,12 +24,17 @@ public class Cube : MonoBehaviour
         _repainter.RepaintToStartColor();
     }
 
+    private void OnEnable()
+    {
+        _isFirstCollision = true;
+        _rigidbody.linearVelocity = Vector3.zero;
+    }
+
     private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.TryGetComponent<Platform>(out Platform platform) && _isFirstCollision)
+        if (_isFirstCollision && other.gameObject.TryGetComponent<Platform>(out Platform platform))
         {
             _isFirstCollision = false;
-
             _repainter.Repaint();
             StartCoroutine(ReturnWithDelay());
         }
@@ -41,8 +44,14 @@ public class Cube : MonoBehaviour
     {
         yield return _waitForSeconds;
         _repainter.RepaintToStartColor();
-        _collider.gameObject.SetActive(false);
-        _rigidbody.linearVelocity = Vector3.zero;
+
         WaitOver?.Invoke(this);
+    }
+
+    public void ResetState()
+    {
+        _isFirstCollision = true;
+        _rigidbody.linearVelocity = Vector3.zero;
+        _rigidbody.angularVelocity = Vector3.zero;
     }
 }
